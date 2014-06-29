@@ -49,6 +49,67 @@ public class DownloadService extends Service
     private volatile ServiceHandler mServiceHandler;
 
     /**
+     * Hook method called when DownloadService is first launched by
+     * the Android ActivityManager.
+     */
+    public void onCreate() {
+        super.onCreate();
+        
+        // Create and start a background HandlerThread since by
+        // default a Service runs in the UI Thread, which we don't
+        // want to block.
+        HandlerThread thread =
+            new HandlerThread("DownloadService");
+        thread.start();
+        
+        // Get the HandlerThread's Looper and use it for our Handler.
+        mServiceLooper = thread.getLooper();
+        mServiceHandler =
+            new ServiceHandler(mServiceLooper);
+    }
+
+    /**
+     * Hook method called each time a Started Service is sent an
+     * Intent via startService().
+     */
+    public int onStartCommand(Intent intent, 
+                              int flags,
+                              int startId) {
+        // Create a Message that will be sent to ServiceHandler to
+        // retrieve animagebased on the URI in the Intent.
+        Message message =
+            mServiceHandler.makeDownloadMessage(intent,
+                                                startId);
+        
+        // Send the Message to ServiceHandler to retrieve an image
+        // based on contents of the Intent.
+        mServiceHandler.sendMessage(message);
+        
+        // Don't restart the DownloadService automatically if its
+        // process is killed while it's running.
+        return Service.START_NOT_STICKY;
+    }
+
+    /**
+     * Helper method that returns pathname if download succeeded.
+     */
+    public static String getPathname(Message message) {
+        // Extract the data from Message, which is in the form
+        // of a Bundle that can be passed across processes.
+        Bundle data = message.getData();
+
+        // Extract the pathname from the Bundle.
+        String pathname = data.getString("PATHNAME");
+
+        // Check to see if the download succeeded.
+        if (message.arg1 != Activity.RESULT_OK 
+            || pathname == null)
+            return null;
+        else
+            return pathname;
+    }
+
+    /**
      * Factory method to make the desired Intent.
      */
     public static Intent makeIntent(Context context,
@@ -100,12 +161,12 @@ public class DownloadService extends Service
                 ? Activity.RESULT_CANCELED 
                 : Activity.RESULT_OK;
 
-            Bundle bundle = new Bundle();
+            Bundle data = new Bundle();
 
             // Pathname for the downloaded image.
-            bundle.putString("PATHNAME", 
-                             pathname);
-            message.setData(bundle);
+            data.putString("PATHNAME", 
+            			   pathname);
+            message.setData(data);
             return message;
         }
 
@@ -126,7 +187,7 @@ public class DownloadService extends Service
         }
 
         /**
-         * Download the designated image and reply to the
+         * Retrieves the designated image and reply to the
          * DownloadActivity via the Messenger sent with the Intent.
          */
         private void downloadImageAndReply(Intent intent) {
@@ -134,13 +195,23 @@ public class DownloadService extends Service
             String pathname = downloadImage(DownloadService.this,
                                             intent.getData().toString());
 
-            // Call factory method to create Message.
-            Message message = makeReplyMessage(pathname);
-        
             // Extract the Messenger.
             Messenger messenger = (Messenger)
                     intent.getExtras().get("MESSENGER");
 
+            // Send the pathname via the messenger.
+            sendPath(messenger, pathname);
+        }
+
+        /**
+         * Send the pathname back to the DownloadActivity via the
+         * messenger.
+         */
+        private void sendPath(Messenger messenger, 
+                              String pathname) {
+            // Call factory method to create Message.
+            Message message = makeReplyMessage(pathname);
+        
             try {
                 // Send pathname to back to the DownloadActivity.
                 messenger.send(message);
@@ -150,7 +221,7 @@ public class DownloadService extends Service
                       e);
             }
         }
-        
+
 	/**
 	 * Create a file to store the result of a download.
 	 * 
@@ -236,48 +307,6 @@ public class DownloadService extends Service
         }
     }
     
-    /**
-     * Hook method called when DownloadService is first launched by
-     * the Android ActivityManager.
-     */
-    public void onCreate() {
-        super.onCreate();
-        
-        // Create and start a background HandlerThread since by
-        // default a Service runs in the UI Thread, which we don't
-        // want to block.
-        HandlerThread thread =
-            new HandlerThread("DownloadService");
-        thread.start();
-        
-        // Get the HandlerThread's Looper and use it for our Handler.
-        mServiceLooper = thread.getLooper();
-        mServiceHandler =
-            new ServiceHandler(mServiceLooper);
-    }
-
-    /**
-     * Hook method called each time a Started Service is sent an
-     * Intent via startService().
-     */
-    public int onStartCommand(Intent intent, 
-                              int flags,
-                              int startId) {
-        // Create a Message that will be sent to ServiceHandler to
-        // retrieve animagebased on the URI in the Intent.
-        Message message =
-            mServiceHandler.makeDownloadMessage(intent,
-                                                startId);
-        
-        // Send the Message to ServiceHandler to retrieve an image
-        // based on contents of the Intent.
-        mServiceHandler.sendMessage(message);
-        
-        // Don't restart the DownloadService automatically if its
-        // process is killed while it's running.
-        return Service.START_NOT_STICKY;
-    }
-
     /**
      * Hook method called back to shutdown the Looper.
      */
