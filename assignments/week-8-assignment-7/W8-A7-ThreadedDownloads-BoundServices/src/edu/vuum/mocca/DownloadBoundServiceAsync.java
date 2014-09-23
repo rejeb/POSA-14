@@ -9,7 +9,7 @@ import android.os.RemoteException;
 
 /**
  * @class DownloadBoundServiceAsync
- 
+
  * @brief This class handles downloads using asynchronous AIDL
  *        interactions.  The component that binds to this service
  *        should receive an IBinder. This IBinder should be an
@@ -21,7 +21,7 @@ import android.os.RemoteException;
  *        finished, this service should send the pathname of the
  *        downloaded file back to the calling component by calling
  *        sendPath() on the DownloadCallback object.
- *  
+ *
  *        AIDL is an example of the Broker Pattern, in which all
  *        interprocess communication details are hidden behind the
  *        AIDL interfaces.
@@ -41,7 +41,7 @@ public class DownloadBoundServiceAsync extends Service{
              * Download the image at the given Uri and return a
              * pathname to the file on the Android file system by
              * calling the sendPath() method on the provided callback
-             * 
+             *
              * Use the methods defined in DownloadUtils for code brevity.
              */
             @Override
@@ -52,10 +52,12 @@ public class DownloadBoundServiceAsync extends Service{
                 // the appropriate helper method in DownloadUtils and
                 // then send the pathname back to the client via the
                 // callback object.
+
+                callback.sendPath(DownloadUtils.downloadFile(getApplicationContext(),uri));
             }
-		
+
 	};
-	
+
     /**
      * Called when a component calls bindService() with the proper
      * intent.  Return the concrete implementation of DownloadRequest
@@ -75,6 +77,7 @@ public class DownloadBoundServiceAsync extends Service{
     public static Intent makeIntent(Context context) {
         // TODO - replace the null to create the appropriate Intent
         // and return it to the caller.
-        return null;
+
+        return new Intent(context,DownloadBoundServiceAsync.class);
     }
 }

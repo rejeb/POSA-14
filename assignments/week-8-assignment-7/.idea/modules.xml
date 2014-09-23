@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/W8-A7-ThreadedDownloads-BoundServices/W8-A7-ThreadedDownloads-BoundServices.iml" filepath="$PROJECT_DIR$/W8-A7-ThreadedDownloads-BoundServices/W8-A7-ThreadedDownloads-BoundServices.iml" />
+      <module fileurl="file://$PROJECT_DIR$/W8-A7-ThreadedDownloads-BoundServices-Tests/W8-A7-ThreadedDownloads-BoundServices-Tests.iml" filepath="$PROJECT_DIR$/W8-A7-ThreadedDownloads-BoundServices-Tests/W8-A7-ThreadedDownloads-BoundServices-Tests.iml" />
+    </modules>
+  </component>
+</project>
+

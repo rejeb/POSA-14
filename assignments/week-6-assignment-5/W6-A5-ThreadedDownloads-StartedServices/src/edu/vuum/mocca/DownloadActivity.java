@@ -2,6 +2,7 @@ package edu.vuum.mocca;
 
 import java.lang.ref.WeakReference;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -78,6 +79,7 @@ public class DownloadActivity extends DownloadBase {
                 // bitmap that's been downloaded and returned to
                 // the DownloadActivity as a pathname who's Bundle
             	// key is defined by DownloadUtils.PATHNAME_KEY
+                activity.displayBitmap((String) msg.getData().get(DownloadUtils.PATHNAME_KEY));
             }
     	}
     }
@@ -101,22 +103,25 @@ public class DownloadActivity extends DownloadBase {
      */
     public void runService(View view) {
     	String which = "";
-
+        Intent intent=null;
     	switch (view.getId()) {
         case R.id.intent_service_button:
             // TODO - You fill in here to start the
             // DownloadIntentService with the appropriate Intent
             // returned from the makeIntent() factory method.
+             intent=DownloadIntentService.makeIntent(getApplicationContext(),handler,DownloadUtils.OFFLINE_FILENAME);
 
             which = "Starting DownloadIntentService";
+            startService(intent);
             break;
         
         case R.id.thread_pool_button:
             // TODO - You fill in here to start the
             // ThreadPoolDownloadService with the appropriate Intent
             // returned from the makeIntent() factory method.
-
+            intent=ThreadPoolDownloadService.makeIntent(getApplicationContext(),handler,DownloadUtils.OFFLINE_FILENAME);
             which = "Starting ThreadPoolDownloadService";
+            startService(intent);
             break;
         
         }
